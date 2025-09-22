@@ -1,0 +1,125 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5633281064234734715
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Flamethrower Embers
+  m_Shader: {fileID: 4800000, guid: 35b95f80d573dd54f8ef5e8cd1d2611f, type: 3}
+  m_Parent: {fileID: 2100000, guid: 0780feedb4165bd479e0a58a6d8a56f8, type: 2}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _ADDITIONALLIGHTSFLATENABLED_ON
+  - _MAINLIGHTFLATENABLED_ON
+  - _NOISEDILATIONENABLED_ON
+  - _NOISEDISTORTIONDILATIONENABLED_ON
+  - _NOISEDISTORTIONENABLED_ON
+  - _RADIALMASKDISTORTIONDILATIONENABLED_ON
+  - _RADIALMASKDISTORTIONENABLED_ON
+  - _RADIALMASKSUBTRACTIVE_ON
+  - _RADIALMASK_ON
+  - _VERTEXNOISEDILATIONENABLED_ON
+  - _VERTICALMASKSOBJECTSPACE_ON
+  m_InvalidKeywords:
+  - _MASKDISTORTIONCAUSTICS_ON
+  - _MASKDISTORTIONDILATIONENABLED_ON
+  - _MASKDISTORTIONENABLED_ON
+  - _MASKNOISEDISTORTIONCAUSTICS_ON
+  - _MASK_ON
+  - _NOISEDISTORTIONCAUSTICSENABLED_ON
+  - _NOISEDISTORTIONCAUSTICS_ON
+  - _NOISEDISTORTION_ON
+  - _VERTEXNOISETWISTENABLED_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _ColourHueShift: -0.01
+    - _ColourSaturationShift: -1
+    - _ColourValueMultiplier: 20
+    - _DepthFade: 0
+    - _Mask: 1
+    - _MaskDistortion: 0.1
+    - _MaskDistortionEnabled: 1
+    - _MaskDistortionScale: 1
+    - _MaskRadiusoverParticleLifetime: 1
+    - _NoiseDilation: 0.004
+    - _NoiseDistortion: 0.1
+    - _NoiseDistortionScale: 0.5
+    - _NoisePower: 1
+    - _NoiseScale: 1
+    - _NoiseUVYPreOffset: 0
+    - _NoiseUVYPrePower: 1
+    - _NoiseUVYPreScale: 1
+    - _NoiseXZTwistEnabled: 0
+    - _ObjectSpaceUVs: 0
+    - _RadialMask: 1
+    - _RadialMaskDistortion: 0.1
+    - _RadialMaskDistortionScale: 1
+    - _RadialMaskRadiusOverParticleLifetime: 1
+    - _SpherizeRadius: 0
+    - _SubtractiveDepthFade: 0.1
+    - _Tessellation: 1
+    - _VertexNoise: 0
+    - _VertexNoiseDilation: 0
+    - _VertexNoiseDilationEnabled: 1
+    - _VertexNoiseEnabled: 0
+    - _VertexNoiseOctaves: 1
+    - _VertexNoiseScale: 2
+    - _VertexNoiseTwist: 0
+    - _VertexNormalOffsetBottom: 0
+    - _VertexOffsetOverY1Power: 2
+    - _VertexOffsetOverY2Power: 2
+    - _VertexWave: 0
+    - _VertexWaveAnimation: 4
+    - _VertexWaveEnabled: 0
+    - _VertexWaveNoiseVerticalMaskPower: 1
+    - _VertexWaveNoiseVerticalMaskRemapMin: 0
+    - _VerticalColour: 0
+    - _VerticalColourMaskPower: 1
+    - _VerticalColourMaskRemapMax: 1
+    - _VerticalColourMaskRemapMin: 0
+    - _VerticalMask1: 0
+    - _VerticalMask1Power: 1
+    - _VerticalMask1RemapMin: 0
+    - _VerticalMask1Subtractive: 0
+    - _VerticalMask2: 0
+    - _VerticalMask2Power: 1
+    - _VerticalMask2RemapMax: 1
+    m_Colors:
+    - _ColourA: {r: 1, g: 0.2, b: 0, a: 1}
+    - _ColourB: {r: 1, g: 0, b: 0, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _MaskDistortionTiling: {r: 1, g: 1, b: 1, a: 0}
+    - _MaskTiling: {r: 1, g: 1, b: 0, a: 0}
+    - _NoiseDistortionTiling: {r: 1, g: 1, b: 1, a: 0}
+    - _RadialMaskDistortionTiling: {r: 1, g: 1, b: 1, a: 0}
+    - _RadialMaskTiling: {r: 1, g: 1, b: 0, a: 0}
+    - _VertexNoiseAnimation: {r: 0, g: 2, b: 0, a: 0}
+    - _VertexOffsetOverY2: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

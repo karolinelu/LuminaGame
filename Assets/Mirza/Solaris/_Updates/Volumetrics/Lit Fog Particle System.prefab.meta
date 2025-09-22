@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 995e000b5eb2f3448b9b87bbc85027aa
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 304038
+  packageName: Solaris (Procedural Fire, Smoke, Energy and Trails Shader + VFX)
+  packageVersion: 1.1.1
+  assetPath: Assets/Mirza/Solaris/_Updates/Volumetrics/Lit Fog Particle System.prefab
+  uploadId: 766201

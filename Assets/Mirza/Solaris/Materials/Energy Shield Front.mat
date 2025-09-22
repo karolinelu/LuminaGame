@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Energy Shield Front
+  m_Shader: {fileID: 4800000, guid: 35b95f80d573dd54f8ef5e8cd1d2611f, type: 3}
+  m_Parent: {fileID: 2100000, guid: b778055c502b7a849b14128761a570f7, type: 2}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _ADDITIONALLIGHTSFLATENABLED_ON
+  - _MAINLIGHTFLATENABLED_ON
+  - _NOISEDILATIONENABLED_ON
+  - _NOISEDISTORTIONDILATIONENABLED_ON
+  - _RADIALMASKDISTORTIONDILATIONENABLED_ON
+  - _RADIALMASKSUBTRACTIVE_ON
+  - _RADIALMASK_ON
+  - _SPHERIZENOISE_ON
+  - _VERTEXNOISEDILATIONENABLED_ON
+  - _VERTEXNOISEENABLED_ON
+  - _VERTICALMASKSOBJECTSPACE_ON
+  m_InvalidKeywords:
+  - _MASKDISTORTIONCAUSTICS_ON
+  - _MASKDISTORTIONDILATIONENABLED_ON
+  - _MASKNOISEDISTORTIONCAUSTICS_ON
+  - _MASK_ON
+  - _NOISEDISTORTIONCAUSTICSENABLED_ON
+  - _NOISEDISTORTIONCAUSTICS_ON
+  - _SPHERIZE_ON
+  - _VERTEXNOISETWISTENABLED_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _ColourHueShift: 0
+    - _ColourSaturationShift: 0
+    - _ColourValueMultiplier: 4
+    - _DepthFade: 0
+    - _Mask: 1
+    - _MaskDistortionEnabled: 0
+    - _MaskFeather: 0.15
+    - _NoiseDistortion: 0.02
+    - _NoiseDistortionEnabled: 0
+    - _NoiseDistortionScale: 5
+    - _NoiseParallaxOffset: -3.14
+    - _NoiseScale: 2
+    - _NoiseXYTwist: 118.08
+    - _ObjectSpaceUVs: 0
+    - _RadialMask: 1
+    - _RadialMaskDistortionEnabled: 0
+    - _RadialMaskFeather: 0.15
+    - _Spherize: 1
+    - _SpherizeNoise: 1
+    - _SpherizeNoiseStrength: 0.5
+    - _SpherizeRadius: 0.5
+    - _SpherizeStrength: 0.5
+    - _Tessellation: 9
+    - _VertexNoise: 0.003
+    - _VertexNoiseEnabled: 1
+    - _VertexNoiseScale: 4
+    - _VertexWaveNoiseVerticalMaskRemapMax: 0
+    m_Colors:
+    - _NoiseDistortionAnimation: {r: 0, g: 0.5, b: 0.5, a: 2}
+    - _NoiseOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _RadialMaskTiling: {r: 1, g: 1, b: 0, a: 0}
+    - _VertexNoiseAnimation: {r: 0, g: 2, b: 0.5, a: 4}
+    - _VerticalColourA: {r: 0, g: 0.5019608, b: 1, a: 1}
+    - _VerticalColourB: {r: 0, g: 0, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
+--- !u!114 &659910077609131237
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7

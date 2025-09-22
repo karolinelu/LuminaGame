@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 3e9fef90fa1fa8d4091eea0baa50ed09
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 304038
+  packageName: Solaris (Procedural Fire, Smoke, Energy and Trails Shader + VFX)
+  packageVersion: 1.1.1
+  assetPath: Assets/Mirza/Solaris/Shaders/_Includes/Solaris.hlsl
+  uploadId: 766201

@@ -1,0 +1,152 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Procedural Fire
+  m_Shader: {fileID: 4800000, guid: 35b95f80d573dd54f8ef5e8cd1d2611f, type: 3}
+  m_Parent: {fileID: 2100000, guid: 70a9de15fa7092641a3e8bccd43be2a8, type: 2}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _ADDITIONALLIGHTSFLATENABLED_ON
+  - _MAINLIGHTFLATENABLED_ON
+  - _NOISEDILATIONENABLED_ON
+  - _NOISEDISTORTIONDILATIONENABLED_ON
+  - _NOISEDISTORTIONENABLED_ON
+  - _RADIALMASKDISTORTIONDILATIONENABLED_ON
+  - _RADIALMASKDISTORTIONENABLED_ON
+  - _RADIALMASKSUBTRACTIVE_ON
+  - _RADIALMASK_ON
+  - _SPHERIZENOISE_ON
+  - _VERTEXNOISEDILATIONENABLED_ON
+  - _VERTEXNOISEENABLED_ON
+  - _VERTEXWAVEENABLED_ON
+  - _VERTICALCOLOUR_ON
+  - _VERTICALMASKSOBJECTSPACE_ON
+  m_InvalidKeywords:
+  - _MASKDISTORTIONCAUSTICS_ON
+  - _MASKDISTORTIONDILATIONENABLED_ON
+  - _MASKDISTORTIONENABLED_ON
+  - _MASKNOISEDISTORTIONCAUSTICS_ON
+  - _MASK_ON
+  - _NOISEDISTORTIONCAUSTICSENABLED_ON
+  - _NOISEDISTORTIONCAUSTICS_ON
+  - _NOISEDISTORTION_ON
+  - _SPHERIZE_ON
+  - _VERTEXNOISETWISTENABLED_ON
+  - _VERTEXNOISE_ON
+  - _VERTEXWAVE_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: _SineWavesScale
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _ColourHueShift: 0
+    - _ColourPower: 2
+    - _ColourValueMultiplier: 8
+    - _Mask: 1
+    - _MaskDistortionDilation: 0.01
+    - _MaskDistortionEnabled: 1
+    - _MaskDistortionOctaves: 2
+    - _MaskFeather: 1.1
+    - _NoiseDilation: 0.04
+    - _NoiseDistortionDilation: 0.1
+    - _NoiseDistortionEnabled: 1
+    - _NoiseDistortionScale: 1.4
+    - _NoiseOctaves: 3
+    - _NoiseParallaxOffset: 0.5
+    - _NoisePower: 0.35
+    - _NoiseScale: 1
+    - _NoiseUVYPreOffset: 0
+    - _NoiseUVYPrePower: 1
+    - _NoiseUVYPreScale: 1
+    - _ObjectSpaceUVs: 0
+    - _RadialMask: 1
+    - _RadialMaskDistortionDilation: 0.01
+    - _RadialMaskDistortionOctaves: 2
+    - _RadialMaskFeather: 1.1
+    - _Spherize: 1
+    - _SpherizeNoise: 1
+    - _SpherizeNoiseRadius: 2
+    - _SpherizeNoiseStrength: 3
+    - _SpherizeRadius: 2
+    - _SpherizeStrength: 3
+    - _SubtractiveDepthFade: 0.4
+    - _VertexNoise: 0.02
+    - _VertexNoiseDilation: 0.02
+    - _VertexNoiseEnabled: 1
+    - _VertexNoiseScale: 4
+    - _VertexNormalOffsetBottom: 0
+    - _VertexNormalOffsetBottomPower: 1
+    - _VertexNormalOffsetPower: 1
+    - _VertexOffsetOverY2Power: 2
+    - _VertexPinch: 0.2
+    - _VertexPinchTop: 0.2
+    - _VertexUVOffsetTop: -0.2
+    - _VertexWave: 0.05
+    - _VertexWaveAnimation: 4
+    - _VertexWaveNoiseVerticalMaskPower: 1
+    - _VertexWaveNoiseVerticalMaskRemapMin: 0
+    - _VertexWaveOffset: 0
+    - _VerticalColour: 1
+    - _VerticalColourHueShift: -0.02
+    - _VerticalColourMaskPower: 1.5
+    - _VerticalColourMaskRemapMin: 0
+    - _VerticalMask: 0
+    - _VerticalMask1: 0
+    - _VerticalMask1Power: 1
+    - _VerticalMask1Subtractive: 0
+    - _VerticalMask2: 0
+    - _VerticalMask2Power: 1
+    - _VerticalMask2RemapMax: 1
+    - _VerticalMaskPower: 1
+    m_Colors:
+    - _ColourA: {r: 1, g: 0.11090687, b: 0, a: 1}
+    - _ColourB: {r: 1, g: 0.028449515, b: 0, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _MaskDistortionAnimation: {r: 0, g: 2, b: 1, a: 0}
+    - _MaskDistortionOffset: {r: 0, g: 0, b: 10, a: 0}
+    - _MaskDistortionTiling: {r: 2, g: 1, b: 1, a: 0}
+    - _MaskOffset: {r: 0, g: -1, b: 0, a: 0}
+    - _MaskTiling: {r: 1.5, g: 0.5, b: 0, a: 0}
+    - _NoiseAnimation: {r: 0, g: 3, b: 0, a: 0}
+    - _NoiseDistortionAnimation: {r: 0, g: 2, b: 0, a: 0}
+    - _NoiseDistortionOffset: {r: 0, g: 0, b: 5, a: 0}
+    - _NoiseDistortionTiling: {r: 3, g: 1, b: 1, a: 0}
+    - _NoiseTiling: {r: 2.5, g: 1, b: 1, a: 0}
+    - _RadialMaskDistortionAnimation: {r: 0, g: 2, b: 1, a: 0}
+    - _RadialMaskDistortionOffset: {r: 0, g: 0, b: 10, a: 0}
+    - _RadialMaskDistortionTiling: {r: 2, g: 1, b: 1, a: 0}
+    - _RadialMaskOffset: {r: 0, g: -1, b: 0, a: 0}
+    - _RadialMaskTiling: {r: 1.5, g: 0.5, b: 0, a: 0}
+    - _SpherizeNoiseOffset: {r: 0, g: 0.1, b: 0, a: 0}
+    - _SpherizeOffset: {r: 0, g: 0.1, b: 0, a: 0}
+    - _VertexNoiseAnimation: {r: 0, g: 3, b: 0, a: 0}
+    - _VerticalColourA: {r: 1, g: 0.2, b: 0, a: 1}
+    - _VerticalColourB: {r: 1, g: 0, b: 0, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
+--- !u!114 &659910077609131237
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7

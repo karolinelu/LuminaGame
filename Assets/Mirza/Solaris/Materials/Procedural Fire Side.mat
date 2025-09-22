@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Procedural Fire Side
+  m_Shader: {fileID: 4800000, guid: 35b95f80d573dd54f8ef5e8cd1d2611f, type: 3}
+  m_Parent: {fileID: 2100000, guid: 26dee1c8e19da064fbf967755dbc48a9, type: 2}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _ADDITIONALLIGHTSFLATENABLED_ON
+  - _MAINLIGHTFLATENABLED_ON
+  - _NOISEDILATIONENABLED_ON
+  - _NOISEDISTORTIONDILATIONENABLED_ON
+  - _NOISEDISTORTIONENABLED_ON
+  - _RADIALMASKDISTORTIONDILATIONENABLED_ON
+  - _RADIALMASKDISTORTIONENABLED_ON
+  - _RADIALMASKSUBTRACTIVE_ON
+  - _RADIALMASK_ON
+  - _VERTEXNOISEDILATIONENABLED_ON
+  - _VERTEXNOISEENABLED_ON
+  - _VERTICALMASKSOBJECTSPACE_ON
+  m_InvalidKeywords:
+  - _CORRECTEDPARALLAXOFFSET_ON
+  - _MASKDISTORTIONCAUSTICS_ON
+  - _MASKDISTORTIONDILATIONENABLED_ON
+  - _MASKDISTORTIONENABLED_ON
+  - _MASKNOISEDISTORTIONCAUSTICS_ON
+  - _MASK_ON
+  - _NOISEDISTORTIONCAUSTICSENABLED_ON
+  - _NOISEDISTORTIONCAUSTICS_ON
+  - _NOISEDISTORTION_ON
+  - _VERTEXNOISETWISTENABLED_ON
+  - _VERTEXNOISE_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _ColourHueShift: -0.01
+    - _ColourMultiplier: 2
+    - _ColourValueMultiplier: 1
+    - _CorrectedParallaxOffset: 1
+    - _MaskDistortion: 0.05
+    - _MaskDistortionDilation: 0.004
+    - _MaskDistortionOctaves: 1
+    - _MaskDistortionScale: 2
+    - _MaskFeather: 1.1
+    - _NoiseDistortion: 0.02
+    - _NoiseDistortionDilation: 0.004
+    - _NoiseDistortionScale: 1
+    - _NoiseOctaves: 2
+    - _NoiseParallaxOffset: 1
+    - _NoisePower: 0.35
+    - _NoiseScale: 2
+    - _RadialMaskDistortionEnabled: 1
+    - _RadialMaskFeather: 1.1
+    - _SwapUVXY: 0
+    - _TessValue: 16
+    - _Tessellation: 20
+    - _VertexNoiseDilation: 0.02
+    - _VertexNoiseScale: 4
+    - _VertexWaveAnimation: 8
+    - _VerticalColour: 0
+    - _VerticalColourMaskPower: 1
+    - _VerticalColourMaskRemapMax: 1
+    - _VerticalColourMaskRemapMin: 0
+    - _VerticalColourValueMultiplier: 5
+    - _WaveGradient: 0
+    - _WaveNoise: 0
+    - _WaveNoiseDilation: 0
+    - _WaveNoiseScale: 4
+    m_Colors:
+    - _ColourA: {r: 1, g: 0.246209, b: 0, a: 1}
+    - _ColourB: {r: 1, g: 0.03141361, b: 0, a: 1}
+    - _DistortionNoiseOffset: {r: 5, g: 0, b: 5, a: 0}
+    - _MaskDistortionAnimation: {r: 0, g: 2, b: 0, a: 0}
+    - _MaskDistortionNoiseOffset: {r: 10, g: 0, b: 10, a: 0}
+    - _MaskDistortionOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _MaskDistortionTiling: {r: 1, g: 1, b: 1, a: 0}
+    - _MaskOffset: {r: 0, g: -1.6, b: 0, a: 0}
+    - _MaskTiling: {r: 1.5, g: 0.5, b: 0, a: 0}
+    - _NoiseAnimation: {r: 0, g: 3, b: 0.5, a: 1}
+    - _NoiseDistortionAnimation: {r: 0, g: 1.5, b: 0, a: 0}
+    - _NoiseDistortionOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _NoiseDistortionTiling: {r: 1.5, g: 1, b: 1, a: 0}
+    - _NoiseOffset: {r: 100, g: 0, b: 0, a: 0}
+    - _NoiseTiling: {r: 2.4, g: 1, b: 1, a: 0}
+    - _RadialMaskDistortionTiling: {r: 1, g: 1, b: 1, a: 0}
+    - _RadialMaskOffset: {r: 0, g: -1.6, b: 0, a: 0}
+    - _RadialMaskTiling: {r: 1.5, g: 0.5, b: 0, a: 0}
+    - _VertexNoiseAnimation: {r: 0, g: 2, b: 0, a: 0}
+    - _VerticalColourA: {r: 0, g: 0.5019608, b: 1, a: 1}
+    - _WaveNoiseAnimation: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
+--- !u!114 &659910077609131237
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7
