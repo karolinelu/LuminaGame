@@ -21,6 +21,13 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
     // Single cylinder for collective movement-based alpha effects
     [SerializeField] private GameObject cylinderObject; // Single cylinder GameObject
     [SerializeField] private Renderer cylinderRenderer; // Single cylinder renderer
+    
+    // Flow Score UI
+    [SerializeField] private UnityEngine.UI.Text flowScoreText; // UI Text component for flow score display
+    private float currentFlowScore = 0f; // Current flow score
+    private float maxFlowScore = 1000f; // Maximum flow score
+    private float flowScoreIncreaseRate = 100f; // How fast flow score increases
+    //private float flowDecayRate = 1f; // How fast flow score decays when no movement
 
     private Experimental.TextureFramePool _textureFramePool;
     public readonly PoseLandmarkDetectionConfig config = new PoseLandmarkDetectionConfig();
@@ -50,7 +57,12 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
     private float currentCollectiveAlpha = 0f; // Collective alpha value based on all players' movement
     private float maxBurnerAlpha = 1f; // Maximum alpha value
     private float alphaIncreaseRate = 0.8f; // How fast alpha increases with movement
-    private float movementThreshold = 0.6f; // Minimum movement to trigger alpha increase
+    private float movementThreshold = 0.1f; // Maximum movement for stillness detection (lower = more sensitive to stillness)
+    
+    // Flow score calculation
+    private Vector3[] previousFlowPositions = new Vector3[6]; // Store previous positions for all 6 wrists (3 players x 2 wrists)
+    private float flowSmoothness = 0f; // Measure of how smooth the movement is
+    private float lastFlowUpdateTime = 0f; // Last time flow score was updated
     
     // Color animation for cylinders
     private float colorAnimationSpeed = 0.3f; // Speed of color animation (slower for more gentle wave movement)
@@ -77,8 +89,17 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
             previousRightWristPositions[i] = Vector3.zero;
         }
         
-        // Initialize collective alpha
+        // Initialize flow score positions
+        for (int i = 0; i < 6; i++)
+        {
+            previousFlowPositions[i] = Vector3.zero;
+        }
+        
+        // Initialize collective alpha and flow score
         currentCollectiveAlpha = 0f;
+        currentFlowScore = 0f;
+        
+        // Don't create flow score UI automatically - only create when in game mode
         
         // Set up camera for optimal viewing
         SetupCameraForViewing();
@@ -88,18 +109,108 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
     {
         if (mainCamera != null)
         {
-            // Position camera to see the MediaPipe canvas/UI
-            mainCamera.transform.position = new Vector3(0, 0, -10);
-            mainCamera.transform.LookAt(Vector3.zero); // Look at the origin where UI typically is
+            // Position camera to see the 3D scene with wrist GameObjects and cylinder
+            mainCamera.transform.position = new Vector3(0, 0, -5);
+            mainCamera.transform.LookAt(Vector3.zero);
             
-            // Set appropriate field of view for UI viewing
+            // Set appropriate field of view for 3D scene viewing
             mainCamera.fieldOfView = 60f;
             
-            // Set clipping planes
+            // Set clipping planes for 3D objects
             mainCamera.nearClipPlane = 0.1f;
             mainCamera.farClipPlane = 20f;
             
-            Debug.Log("Camera configured for viewing");
+            Debug.Log("Camera configured for 3D scene viewing");
+        }
+    }
+    
+    /// <summary>
+    /// Switches to game mode - positions camera for 3D scene and creates game UI
+    /// </summary>
+    private void SwitchToGameMode()
+    {
+        Debug.Log("Switching to game mode...");
+        
+        // Position camera for 3D scene
+        SetupCameraForViewing();
+        
+        // Create game UI only when switching to game mode
+        CreateFlowScoreUI();
+        
+        // Position the cylinder
+        PositionCylinder();
+        
+        Debug.Log("Game mode activated - 3D scene with flow score UI");
+    }
+    
+    /// <summary>
+    /// Creates the flow score UI if not already assigned
+    /// </summary>
+    private void CreateFlowScoreUI()
+    {
+        if (flowScoreText == null)
+        {
+            Debug.Log("Creating dedicated game canvas for flow score UI...");
+            
+            // Create a dedicated canvas for the game UI (separate from pose landmark canvas)
+            GameObject canvasGO = new GameObject("GameUICanvas");
+            Canvas canvas = canvasGO.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 1000; // High sorting order to ensure it's on top of everything
+            
+            // Add required components for proper UI scaling
+            UnityEngine.UI.CanvasScaler scaler = canvasGO.AddComponent<UnityEngine.UI.CanvasScaler>();
+            scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.screenMatchMode = UnityEngine.UI.CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 0.5f;
+            
+            canvasGO.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+            
+            Debug.Log($"Game canvas created: {canvas.name}, Render mode: {canvas.renderMode}, Sorting order: {canvas.sortingOrder}");
+            
+            // Create the flow score text as a child of the game canvas
+            GameObject textGO = new GameObject("FlowScoreText");
+            textGO.transform.SetParent(canvas.transform, false);
+            
+            // Ensure the text GameObject has proper parent hierarchy
+            if (textGO.transform.parent == null)
+            {
+                Debug.LogError("Failed to set parent for flow score text!");
+                return;
+            }
+            
+            flowScoreText = textGO.AddComponent<UnityEngine.UI.Text>();
+            flowScoreText.text = "Flow Score: 0";
+            flowScoreText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            flowScoreText.fontSize = 36; // Large for better visibility
+            flowScoreText.color = UnityEngine.Color.white;
+            flowScoreText.alignment = TextAnchor.LowerCenter;
+            
+            // Position at bottom center of screen
+            RectTransform rectTransform = flowScoreText.GetComponent<RectTransform>();
+            rectTransform.anchorMin = new Vector2(0.5f, 0f);
+            rectTransform.anchorMax = new Vector2(0.5f, 0f);
+            rectTransform.anchoredPosition = new Vector2(0f, 150f); // Higher up for better visibility
+            rectTransform.sizeDelta = new Vector2(500f, 80f); // Larger size
+            
+            // Add a background for better visibility
+            UnityEngine.UI.Image background = textGO.AddComponent<UnityEngine.UI.Image>();
+            background.color = new UnityEngine.Color(0f, 0f, 0f, 0.7f); // Semi-transparent black background
+            
+            // Make sure the text is on top of the background
+            textGO.transform.SetAsLastSibling();
+            
+            // Verify the hierarchy is correct
+            Debug.Log($"Flow score text parent: {textGO.transform.parent?.name ?? "NULL"}");
+            Debug.Log($"Canvas parent: {canvas.transform.parent?.name ?? "NULL"}");
+            
+            Debug.Log($"Flow score UI created! Canvas: {canvas.name}, Text: {flowScoreText.text}");
+            Debug.Log($"Text position: {rectTransform.anchoredPosition}, Size: {rectTransform.sizeDelta}");
+        }
+        else
+        {
+            Debug.Log("Flow score text already exists");
         }
     }
 
@@ -111,15 +222,13 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
         // Update burner alpha based on movement
         UpdateBurnerAlpha();
         
-        // Temporary: Position camera to see canvas
+        // Update flow score based on fluid movement
+        UpdateFlowScore();
+        
+        // Switch to game mode (3D scene with flow score UI)
         if (Input.GetKeyDown(KeyCode.C))
         {
-            if (Camera.main != null)
-            {
-                Camera.main.transform.position = new Vector3(0, 0, -10);
-                Camera.main.transform.LookAt(Vector3.zero);
-                Debug.Log("Camera positioned to look at canvas");
-            }
+            SwitchToGameMode();
         }
         
         // Temporary: Increase sensitivity
@@ -211,7 +320,93 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
             
             Debug.Log($"Collective Alpha: {currentCollectiveAlpha:F2}");
             Debug.Log($"Total Collective Movement: {totalCollectiveMovement:F3}");
-            Debug.Log($"Movement Above Threshold: {totalCollectiveMovement > movementThreshold}");
+            Debug.Log($"Movement Below Threshold (Stillness): {totalCollectiveMovement < movementThreshold}");
+            Debug.Log($"Flow Score: {currentFlowScore:F0}");
+            Debug.Log($"Flow Smoothness: {flowSmoothness:F2}");
+        }
+        
+        // Flow score controls
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            // Reset flow score
+            currentFlowScore = 0f;
+            Debug.Log("Flow score reset to 0");
+        }
+        
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            // Add flow score bonus
+            currentFlowScore = Mathf.Min(maxFlowScore, currentFlowScore + 100f);
+            Debug.Log($"Flow score increased by 100 to: {currentFlowScore:F0}");
+        }
+        
+        // Test flow score with simulated movement
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            // Simulate some movement for testing
+            for (int i = 0; i < 6; i++)
+            {
+                previousFlowPositions[i] = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
+            }
+            Debug.Log("Simulated movement data for flow score testing");
+        }
+        
+        // Force score increase for testing
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            currentFlowScore += 50f;
+            Debug.Log($"Forced score increase to: {currentFlowScore:F0}");
+        }
+        
+        // Force create game UI for testing (only in game mode)
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            Debug.Log("Force creating game UI for testing...");
+            
+            // Destroy existing game UI if it exists
+            if (flowScoreText != null)
+            {
+                // Destroy the entire game canvas
+                Canvas gameCanvas = flowScoreText.transform.parent.GetComponent<Canvas>();
+                if (gameCanvas != null)
+                {
+                    DestroyImmediate(gameCanvas.gameObject);
+                }
+                flowScoreText = null;
+            }
+            
+            // Also clean up any orphaned AutoFit components that might be causing issues
+            CleanupOrphanedAutoFitComponents();
+            
+            // Create game UI
+            CreateFlowScoreUI();
+            
+            // Test the UI by setting a visible score
+            currentFlowScore = 500f;
+            if (flowScoreText != null)
+            {
+                flowScoreText.text = "TEST GAME UI: 500";
+                flowScoreText.color = UnityEngine.Color.red;
+                Debug.Log("Test game UI created with red text!");
+                
+                // Also make the background more visible
+                UnityEngine.UI.Image bg = flowScoreText.GetComponent<UnityEngine.UI.Image>();
+                if (bg != null)
+                {
+                    bg.color = new UnityEngine.Color(1f, 0f, 0f, 0.8f); // Red background
+                }
+                
+                // Verify canvas properties
+                Canvas canvas = flowScoreText.transform.parent.GetComponent<Canvas>();
+                if (canvas != null)
+                {
+                    Debug.Log($"Game canvas verified: {canvas.name}, Sorting order: {canvas.sortingOrder}");
+                }
+            }
+            else
+            {
+                Debug.LogError("Failed to create game UI!");
+            }
         }
         
         if (Input.GetKeyDown(KeyCode.Comma))
@@ -226,23 +421,37 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
             DebugSolarisShaderProperties();
         }
         
+        // Clean up orphaned AutoFit components
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            CleanupOrphanedAutoFitComponents();
+            Debug.Log("Cleaned up orphaned AutoFit components");
+        }
+        
+        // Handle Solaris shader errors
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            HandleSolarisShaderError();
+            Debug.Log("Handled Solaris shader error - switched to fallback material");
+        }
+        
         // Cylinder positioning controls
         if (Input.GetKeyDown(KeyCode.F))
         {
             PositionCylinder();
         }
         
-        // Movement threshold controls for cylinder visibility
+        // Stillness threshold controls for cylinder visibility
         if (Input.GetKeyDown(KeyCode.T))
         {
-            movementThreshold += 0.1f;
-            Debug.Log($"Movement threshold increased to: {movementThreshold:F2}");
+            movementThreshold += 0.05f;
+            Debug.Log($"Stillness threshold increased to: {movementThreshold:F2} (more movement allowed)");
         }
         
         if (Input.GetKeyDown(KeyCode.R))
         {
-            movementThreshold = Mathf.Max(0.05f, movementThreshold - 0.1f);
-            Debug.Log($"Movement threshold decreased to: {movementThreshold:F2}");
+            movementThreshold = Mathf.Max(0.01f, movementThreshold - 0.05f);
+            Debug.Log($"Stillness threshold decreased to: {movementThreshold:F2} (less movement allowed)");
         }
         
         // Alpha increase rate controls
@@ -625,7 +834,7 @@ private Vector3 ConvertNormalizedToWorldPosition(Mediapipe.Tasks.Components.Cont
 }
 
     /// <summary>
-    /// Updates cylinder alpha based on collective movement from all players - only increases, never decays
+    /// Updates cylinder alpha based on collective stillness from all players - only increases, never decays
     /// </summary>
     private void UpdateBurnerAlpha()
     {
@@ -650,11 +859,12 @@ private Vector3 ConvertNormalizedToWorldPosition(Mediapipe.Tasks.Components.Cont
             previousRightWristPositions[playerIndex] = rightWristSmoothedPositions[playerIndex];
         }
         
-        // Update alpha based on collective movement - only increase, never decrease
-        if (totalCollectiveMovement > movementThreshold)
+        // Update alpha based on collective stillness - only increase, never decrease
+        if (totalCollectiveMovement < movementThreshold)
         {
-            // Increase alpha when collective movement is detected - accumulates over time
+            // Increase alpha when poses are held steadily (low movement = stillness) - accumulates over time
             currentCollectiveAlpha = Mathf.Min(maxBurnerAlpha, currentCollectiveAlpha + alphaIncreaseRate * Time.deltaTime);
+            Debug.Log($"STILLNESS DETECTED! Movement={totalCollectiveMovement:F3} < Threshold={movementThreshold:F3}, Alpha={currentCollectiveAlpha:F2}");
         }
         // Removed decay logic - alpha never decreases, only accumulates brightness
         
@@ -692,6 +902,161 @@ private Vector3 ConvertNormalizedToWorldPosition(Mediapipe.Tasks.Components.Cont
     }
     
     /// <summary>
+    /// Updates the flow score based on fluid movement from all players
+    /// </summary>
+    private void UpdateFlowScore()
+    {
+        // Calculate flow smoothness from all players' movement
+        float totalFlowMovement = 0f;
+        float flowSmoothnessSum = 0f;
+        int activePlayers = 0;
+        
+        for (int playerIndex = 0; playerIndex < 3; playerIndex++)
+        {
+            // Get current positions
+            Vector3 currentLeftPos = leftWristSmoothedPositions[playerIndex];
+            Vector3 currentRightPos = rightWristSmoothedPositions[playerIndex];
+            
+            // Get previous flow positions (index 0,1 = player 0 left,right; 2,3 = player 1 left,right; 4,5 = player 2 left,right)
+            Vector3 previousLeftPos = previousFlowPositions[playerIndex * 2];
+            Vector3 previousRightPos = previousFlowPositions[playerIndex * 2 + 1];
+            
+            // Calculate movement for this player
+            float leftMovement = Vector3.Distance(currentLeftPos, previousLeftPos);
+            float rightMovement = Vector3.Distance(currentRightPos, previousRightPos);
+            float playerMovement = leftMovement + rightMovement;
+            
+            if (playerMovement > 0.01f) // Only count active players
+            {
+                totalFlowMovement += playerMovement;
+                activePlayers++;
+                
+                // Calculate smoothness (inverse of jerkiness)
+                float leftSmoothness = CalculateSmoothness(currentLeftPos, previousLeftPos);
+                float rightSmoothness = CalculateSmoothness(currentRightPos, previousRightPos);
+                flowSmoothnessSum += (leftSmoothness + rightSmoothness) / 2f;
+            }
+            
+            // Update previous flow positions
+            previousFlowPositions[playerIndex * 2] = currentLeftPos;
+            previousFlowPositions[playerIndex * 2 + 1] = currentRightPos;
+        }
+        
+        // Calculate average smoothness
+        if (activePlayers > 0)
+        {
+            flowSmoothness = flowSmoothnessSum / activePlayers;
+        }
+        else
+        {
+            flowSmoothness = 0f;
+        }
+        
+        // Lower thresholds for single player testing
+        float movementThreshold = activePlayers == 1 ? 0.05f : 0.1f; // Lower threshold for single player
+        float smoothnessThreshold = activePlayers == 1 ? 0.1f : 0.3f; // Lower threshold for single player
+        
+        // Debug output for troubleshooting
+        if (Time.time - lastFlowUpdateTime > 1f) // Log every second
+        {
+            Debug.Log($"Flow Debug: ActivePlayers={activePlayers}, TotalMovement={totalFlowMovement:F3}, Smoothness={flowSmoothness:F2}");
+            Debug.Log($"Thresholds: Movement={movementThreshold:F3}, Smoothness={smoothnessThreshold:F2}");
+            Debug.Log($"Current Score: {currentFlowScore:F0}");
+            lastFlowUpdateTime = Time.time;
+        }
+        
+        // Update flow score based on movement and smoothness
+        if (totalFlowMovement > movementThreshold && flowSmoothness > smoothnessThreshold)
+        {
+            // Increase score based on movement amount and smoothness
+            float flowBonus = totalFlowMovement * flowSmoothness * flowScoreIncreaseRate * Time.deltaTime;
+            currentFlowScore = Mathf.Min(maxFlowScore, currentFlowScore + flowBonus);
+            
+            Debug.Log($"SCORE INCREASE! Bonus={flowBonus:F2}, New Score={currentFlowScore:F0}");
+        }
+        else
+        {
+            // No decay - score stays the same when no movement
+            // currentFlowScore remains unchanged
+        }
+        
+        // Update UI
+        UpdateFlowScoreUI();
+    }
+    
+    /// <summary>
+    /// Calculates smoothness of movement (higher = smoother)
+    /// </summary>
+    private float CalculateSmoothness(Vector3 current, Vector3 previous)
+    {
+        if (previous == Vector3.zero) return 0f;
+        
+        float distance = Vector3.Distance(current, previous);
+        if (distance < 0.001f) return 1f; // Very smooth if no movement
+        
+        // More sensitive smoothness calculation for single player testing
+        // Smoothness is inversely related to sudden changes in direction
+        // Lower scale factor makes it more sensitive to movement
+        float scaleFactor = 5f; // Reduced from 10f to be more sensitive
+        return Mathf.Clamp01(1f - (distance * scaleFactor));
+    }
+    
+    /// <summary>
+    /// Updates the flow score UI display
+    /// </summary>
+    private void UpdateFlowScoreUI()
+    {
+        if (flowScoreText != null)
+        {
+            flowScoreText.text = $"Flow Score: {currentFlowScore:F0}";
+            
+            // Change color based on score level
+            if (currentFlowScore > maxFlowScore * 0.8f)
+            {
+                flowScoreText.color = UnityEngine.Color.green; // High flow
+            }
+            else if (currentFlowScore > maxFlowScore * 0.5f)
+            {
+                flowScoreText.color = UnityEngine.Color.yellow; // Medium flow
+            }
+            else if (currentFlowScore > maxFlowScore * 0.2f)
+            {
+                flowScoreText.color = UnityEngine.Color.white; // Low flow
+            }
+            else
+            {
+                flowScoreText.color = UnityEngine.Color.gray; // No flow
+            }
+        }
+        else
+        {
+            // Debug: UI not created yet
+            if (Time.time - lastFlowUpdateTime > 5f) // Only log every 5 seconds to avoid spam
+            {
+                Debug.LogWarning("Flow score text is null - UI may not have been created yet");
+                lastFlowUpdateTime = Time.time;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Cleans up any orphaned AutoFit components that might be causing NullReferenceExceptions
+    /// </summary>
+    private void CleanupOrphanedAutoFitComponents()
+    {
+        // Find all AutoFit components in the scene
+        var autoFitComponents = FindObjectsOfType<Mediapipe.Unity.AutoFit>();
+        foreach (var autoFit in autoFitComponents)
+        {
+            if (autoFit != null && autoFit.transform.parent == null)
+            {
+                Debug.LogWarning($"Found orphaned AutoFit component on {autoFit.gameObject.name}, destroying it");
+                DestroyImmediate(autoFit.gameObject);
+            }
+        }
+    }
+    
+    /// <summary>
     /// Safely checks if a material is valid and has the required properties
     /// </summary>
     private bool IsMaterialValid(Material material)
@@ -708,7 +1073,51 @@ private Vector3 ConvertNormalizedToWorldPosition(Mediapipe.Tasks.Components.Cont
             return false;
         }
         
+        // Check if it's a Solaris shader
+        if (material.shader.name.Contains("Solaris"))
+        {
+            // Check for required Solaris properties
+            if (!material.HasProperty("_ColorA") || !material.HasProperty("_Alpha"))
+            {
+                Debug.LogWarning($"Material '{material.name}' is missing required Solaris properties");
+                return false;
+            }
+        }
+        
         return true;
+    }
+    
+    /// <summary>
+    /// Creates a safe fallback material when Solaris shader causes issues
+    /// </summary>
+    [ContextMenu("Create Safe Fallback Material")]
+    private void CreateSafeFallbackMaterial()
+    {
+        if (cylinderRenderer != null)
+        {
+            // Create a simple Unity Standard material as fallback
+            Material fallbackMaterial = new Material(Shader.Find("Standard"));
+            fallbackMaterial.color = UnityEngine.Color.white;
+            fallbackMaterial.SetFloat("_Metallic", 0f);
+            fallbackMaterial.SetFloat("_Smoothness", 0.5f);
+            
+            cylinderRenderer.material = fallbackMaterial;
+            
+            Debug.Log("Created safe fallback material for cylinder");
+        }
+        else
+        {
+            Debug.LogWarning("Cylinder renderer is not assigned!");
+        }
+    }
+    
+    /// <summary>
+    /// Handles Solaris shader errors gracefully
+    /// </summary>
+    private void HandleSolarisShaderError()
+    {
+        Debug.LogWarning("Solaris shader error detected. Switching to fallback material...");
+        CreateSafeFallbackMaterial();
     }
     
     /// <summary>
