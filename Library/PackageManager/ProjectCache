@@ -5,7 +5,7 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638941885370000000
+      ticks: 638944375020000000
     m_Hash: 2509075168
   m_LockFileStatus:
     m_FilePath: /Users/karolinelujan/LuminaGame/Packages/packages-lock.json
@@ -13,7 +13,7 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638941885370000000
+      ticks: 638944375020000000
     m_Hash: 526176350
 m_EmbeddedPackageManifests:
   m_ManifestsStatus:
@@ -23,7 +23,7 @@ m_EmbeddedPackageManifests:
       m_ContentTrackingEnabled: 1
       m_ModificationDate:
         serializedVersion: 2
-        ticks: 638783109600000000
+        ticks: 638944374920000000
       m_Hash: 2110684936
 m_LocalPackages:
   m_LocalFileStatus: []
