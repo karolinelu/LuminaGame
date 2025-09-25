@@ -44,7 +44,12 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
     // Smoothing/filtering for stable movement - multi-player support
     private Vector3[] leftWristSmoothedPositions = new Vector3[3];
     private Vector3[] rightWristSmoothedPositions = new Vector3[3];
-    private float smoothingFactor = 0.1f; // Lower = more smoothing, Higher = more responsive
+    private Vector3[] leftWristVelocities = new Vector3[3]; // Velocity tracking for smoother movement
+    private Vector3[] rightWristVelocities = new Vector3[3]; // Velocity tracking for smoother movement
+    private float smoothingFactor = 0.12f; // Balanced smoothing - responsive but stable
+    // Frame rate limiting for stability
+    private float lastUpdateTime = 0f;
+    private float updateInterval = 0.02f; // ~50 FPS for better responsiveness
     
     // Sensitivity control
     private float sensitivityMultiplier = 6f; // Current scaling factor
@@ -57,7 +62,7 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
     private float currentCollectiveAlpha = 0f; // Collective alpha value based on all players' movement
     private float maxBurnerAlpha = 1f; // Maximum alpha value
     private float alphaIncreaseRate = 0.8f; // How fast alpha increases with movement
-    private float movementThreshold = 0.1f; // Maximum movement for stillness detection (lower = more sensitive to stillness)
+    private float movementThreshold = 0.3f; // Minimum movement to trigger alpha increase (higher = requires more movement)
     
     // Flow score calculation
     private Vector3[] previousFlowPositions = new Vector3[6]; // Store previous positions for all 6 wrists (3 players x 2 wrists)
@@ -85,6 +90,8 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
             rightWristPositions[i] = new ConcurrentQueue<Vector3>();
             leftWristSmoothedPositions[i] = Vector3.zero;
             rightWristSmoothedPositions[i] = Vector3.zero;
+            leftWristVelocities[i] = Vector3.zero;
+            rightWristVelocities[i] = Vector3.zero;
             previousLeftWristPositions[i] = Vector3.zero;
             previousRightWristPositions[i] = Vector3.zero;
         }
@@ -103,6 +110,9 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
         
         // Set up camera for optimal viewing
         SetupCameraForViewing();
+        
+        // Create wrist GameObjects for each player if not assigned
+        CreateWristGameObjects();
     }
     
     void SetupCameraForViewing()
@@ -114,13 +124,69 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
             mainCamera.transform.LookAt(Vector3.zero);
             
             // Set appropriate field of view for 3D scene viewing
-            mainCamera.fieldOfView = 60f;
+            mainCamera.fieldOfView = 100f;
             
             // Set clipping planes for 3D objects
             mainCamera.nearClipPlane = 0.1f;
             mainCamera.farClipPlane = 20f;
             
             Debug.Log("Camera configured for 3D scene viewing");
+        }
+    }
+    
+    /// <summary>
+    /// Creates wrist GameObjects for each player if not already assigned
+    /// </summary>
+    private void CreateWristGameObjects()
+    {
+        for (int playerIndex = 0; playerIndex < 3; playerIndex++)
+        {
+            // Calculate offset for this player to separate them spatially
+            float playerOffset = playerIndex * 2f; // 2 units apart for each player
+            
+            // Create left wrist GameObject if not assigned
+            if (leftWristObjects[playerIndex] == null)
+            {
+                GameObject leftWrist = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                leftWrist.name = $"Player{playerIndex + 1}_LeftWrist";
+                leftWrist.transform.localScale = Vector3.one * 0.1f; // Small sphere
+                leftWrist.GetComponent<Renderer>().material.color = GetPlayerColor(playerIndex);
+                
+                // Position with offset to separate players
+                leftWrist.transform.position = new Vector3(-1f + playerOffset, 0f, 0f);
+                
+                leftWristObjects[playerIndex] = leftWrist;
+                Debug.Log($"Created left wrist GameObject for Player {playerIndex + 1} at offset {playerOffset}");
+            }
+            
+            // Create right wrist GameObject if not assigned
+            if (rightWristObjects[playerIndex] == null)
+            {
+                GameObject rightWrist = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                rightWrist.name = $"Player{playerIndex + 1}_RightWrist";
+                rightWrist.transform.localScale = Vector3.one * 0.1f; // Small sphere
+                rightWrist.GetComponent<Renderer>().material.color = GetPlayerColor(playerIndex);
+                
+                // Position with offset to separate players
+                rightWrist.transform.position = new Vector3(1f + playerOffset, 0f, 0f);
+                
+                rightWristObjects[playerIndex] = rightWrist;
+                Debug.Log($"Created right wrist GameObject for Player {playerIndex + 1} at offset {playerOffset}");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Gets a unique color for each player
+    /// </summary>
+    private UnityEngine.Color GetPlayerColor(int playerIndex)
+    {
+        switch (playerIndex)
+        {
+            case 0: return UnityEngine.Color.red;      // Player 1 - Red
+            case 1: return UnityEngine.Color.green;    // Player 2 - Green
+            case 2: return UnityEngine.Color.blue;     // Player 3 - Blue
+            default: return UnityEngine.Color.white;
         }
     }
     
@@ -216,6 +282,12 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
 
     void Update()
     {
+        // Frame rate limiting for stability
+        if (Time.time - lastUpdateTime < updateInterval)
+            return;
+        
+        lastUpdateTime = Time.time;
+        
         // Process queued wrist positions on main thread
         ProcessQueuedWristPositions();
         
@@ -320,7 +392,7 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
             
             Debug.Log($"Collective Alpha: {currentCollectiveAlpha:F2}");
             Debug.Log($"Total Collective Movement: {totalCollectiveMovement:F3}");
-            Debug.Log($"Movement Below Threshold (Stillness): {totalCollectiveMovement < movementThreshold}");
+            Debug.Log($"Movement Above Threshold: {totalCollectiveMovement > movementThreshold}");
             Debug.Log($"Flow Score: {currentFlowScore:F0}");
             Debug.Log($"Flow Smoothness: {flowSmoothness:F2}");
         }
@@ -435,23 +507,41 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
             Debug.Log("Handled Solaris shader error - switched to fallback material");
         }
         
+        // Create wrist GameObjects for testing
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            CreateWristGameObjects();
+            Debug.Log("Created wrist GameObjects for all players");
+        }
+        
+        // Check pose detection configuration
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            Debug.Log($"=== POSE DETECTION CONFIG ===");
+            Debug.Log($"NumPoses: {config.NumPoses}");
+            Debug.Log($"MinPoseDetectionConfidence: {config.MinPoseDetectionConfidence}");
+            Debug.Log($"MinPosePresenceConfidence: {config.MinPosePresenceConfidence}");
+            Debug.Log($"MinTrackingConfidence: {config.MinTrackingConfidence}");
+            Debug.Log($"Model: {config.Model}");
+        }
+        
         // Cylinder positioning controls
         if (Input.GetKeyDown(KeyCode.F))
         {
             PositionCylinder();
         }
         
-        // Stillness threshold controls for cylinder visibility
+        // Movement threshold controls for cylinder visibility
         if (Input.GetKeyDown(KeyCode.T))
         {
-            movementThreshold += 0.05f;
-            Debug.Log($"Stillness threshold increased to: {movementThreshold:F2} (more movement allowed)");
+            movementThreshold += 0.1f;
+            Debug.Log($"Movement threshold increased to: {movementThreshold:F2} (requires more movement)");
         }
         
         if (Input.GetKeyDown(KeyCode.R))
         {
-            movementThreshold = Mathf.Max(0.01f, movementThreshold - 0.05f);
-            Debug.Log($"Stillness threshold decreased to: {movementThreshold:F2} (less movement allowed)");
+            movementThreshold = Mathf.Max(0.05f, movementThreshold - 0.1f);
+            Debug.Log($"Movement threshold decreased to: {movementThreshold:F2} (requires less movement)");
         }
         
         // Alpha increase rate controls
@@ -693,6 +783,20 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
     // In your OnPoseLandmarkDetectionOutput method or wherever you process results
 private void OnPoseLandmarkDetectionOutput(PoseLandmarkerResult result, Image image, long timestamp)
 {
+    // Debug: Show how many poses are detected
+    if (result.poseLandmarks != null)
+    {
+        Debug.Log($"=== POSE DETECTION === Detected {result.poseLandmarks.Count} poses");
+        for (int i = 0; i < result.poseLandmarks.Count; i++)
+        {
+            Debug.Log($"Pose {i + 1}: {result.poseLandmarks[i].landmarks.Count} landmarks");
+        }
+    }
+    else
+    {
+        Debug.Log("=== POSE DETECTION === No poses detected");
+    }
+    
     // Process wrist landmarks
     ProcessWristLandmarks(result);
     
@@ -704,51 +808,71 @@ private void ProcessWristLandmarks(PoseLandmarkerResult result)
 {
     if (result.poseLandmarks != null && result.poseLandmarks.Count > 0)
     {
-        var pose = result.poseLandmarks[0];
-        Debug.Log($"Processing pose with {pose.landmarks.Count} landmarks");
+        Debug.Log($"Processing {result.poseLandmarks.Count} detected poses");
         
-        // Left wrist (index 15) - queue position for main thread processing
-        if (pose.landmarks.Count > 15)
+        // Process up to 3 people (or however many poses are detected)
+        int maxPlayers = Mathf.Min(result.poseLandmarks.Count, 3);
+        
+        for (int playerIndex = 0; playerIndex < maxPlayers; playerIndex++)
         {
-            var leftWrist = pose.landmarks[15];
-            Vector3 leftWristPosition = ConvertNormalizedToWorldPosition(leftWrist);
+            var pose = result.poseLandmarks[playerIndex];
+            Debug.Log($"Player {playerIndex + 1}: Processing pose with {pose.landmarks.Count} landmarks");
             
-            Debug.Log($"Left wrist raw: ({leftWrist.x:F3}, {leftWrist.y:F3}, {leftWrist.z:F3}) -> World: {leftWristPosition}");
+            // Left wrist (index 15) - queue position for main thread processing
+            if (pose.landmarks.Count > 15)
+            {
+                var leftWrist = pose.landmarks[15];
+                Vector3 leftWristPosition = ConvertNormalizedToWorldPosition(leftWrist);
+                
+                Debug.Log($"Player {playerIndex + 1} Left wrist raw: ({leftWrist.x:F3}, {leftWrist.y:F3}, {leftWrist.z:F3}) -> World: {leftWristPosition}");
+                
+                // Queue position for main thread processing
+                leftWristPositions[playerIndex].Enqueue(leftWristPosition);
+                hasNewLeftWristPosition[playerIndex] = true;
+            }
+            else
+            {
+                Debug.Log($"Player {playerIndex + 1}: Not enough landmarks for left wrist (need >15, got " + pose.landmarks.Count + ")");
+            }
             
-            // Queue position for main thread processing (player 0)
-            leftWristPositions[0].Enqueue(leftWristPosition);
-            hasNewLeftWristPosition[0] = true;
-        }
-        else
-        {
-            Debug.Log("Not enough landmarks for left wrist (need >15, got " + pose.landmarks.Count + ")");
+            // Right wrist (index 16) - queue position for main thread processing
+            if (pose.landmarks.Count > 16)
+            {
+                var rightWrist = pose.landmarks[16];
+                Vector3 rightWristPosition = ConvertNormalizedToWorldPosition(rightWrist);
+                
+                Debug.Log($"Player {playerIndex + 1} Right wrist raw: ({rightWrist.x:F3}, {rightWrist.y:F3}, {rightWrist.z:F3}) -> World: {rightWristPosition}");
+                
+                // Queue position for main thread processing
+                rightWristPositions[playerIndex].Enqueue(rightWristPosition);
+                hasNewRightWristPosition[playerIndex] = true;
+            }
+            else
+            {
+                Debug.Log($"Player {playerIndex + 1}: Not enough landmarks for right wrist (need >16, got " + pose.landmarks.Count + ")");
+            }
         }
         
-        // Right wrist (index 16) - queue position for main thread processing
-        if (pose.landmarks.Count > 16)
+        // Clear positions for players not detected
+        for (int playerIndex = maxPlayers; playerIndex < 3; playerIndex++)
         {
-            var rightWrist = pose.landmarks[16];
-            Vector3 rightWristPosition = ConvertNormalizedToWorldPosition(rightWrist);
-            
-            Debug.Log($"Right wrist raw: ({rightWrist.x:F3}, {rightWrist.y:F3}, {rightWrist.z:F3}) -> World: {rightWristPosition}");
-            
-            // Queue position for main thread processing (player 0)
-            rightWristPositions[0].Enqueue(rightWristPosition);
-            hasNewRightWristPosition[0] = true;
-        }
-        else
-        {
-            Debug.Log("Not enough landmarks for right wrist (need >16, got " + pose.landmarks.Count + ")");
+            leftWristPositions[playerIndex].Enqueue(Vector3.zero);
+            rightWristPositions[playerIndex].Enqueue(Vector3.zero);
+            hasNewLeftWristPosition[playerIndex] = true;
+            hasNewRightWristPosition[playerIndex] = true;
         }
     }
     else
     {
-        Debug.Log("No pose landmarks detected");
-        // Queue null positions to indicate no pose detected (player 0)
-        leftWristPositions[0].Enqueue(Vector3.zero);
-        rightWristPositions[0].Enqueue(Vector3.zero);
-        hasNewLeftWristPosition[0] = true;
-        hasNewRightWristPosition[0] = true;
+        Debug.Log("No pose landmarks detected - clearing all player positions");
+        // Queue null positions to indicate no pose detected for all players
+        for (int playerIndex = 0; playerIndex < 3; playerIndex++)
+        {
+            leftWristPositions[playerIndex].Enqueue(Vector3.zero);
+            rightWristPositions[playerIndex].Enqueue(Vector3.zero);
+            hasNewLeftWristPosition[playerIndex] = true;
+            hasNewRightWristPosition[playerIndex] = true;
+        }
     }
 }
 
@@ -765,23 +889,29 @@ private void ProcessQueuedWristPositions()
             {
                 hasNewLeftWristPosition[playerIndex] = false;
         
-        // Apply smoothing to reduce flickering
+        // Apply simple exponential smoothing for very stable movement
         if (leftPosition != Vector3.zero)
         {
-                    leftWristSmoothedPositions[playerIndex] = Vector3.Lerp(leftWristSmoothedPositions[playerIndex], leftPosition, smoothingFactor);
+            leftWristSmoothedPositions[playerIndex] = Vector3.Lerp(leftWristSmoothedPositions[playerIndex], leftPosition, smoothingFactor);
         }
         else
         {
-                    leftWristSmoothedPositions[playerIndex] = Vector3.Lerp(leftWristSmoothedPositions[playerIndex], Vector3.zero, smoothingFactor * 2f);
-                }
+            // Moderate decay when no input
+            leftWristSmoothedPositions[playerIndex] = Vector3.Lerp(leftWristSmoothedPositions[playerIndex], Vector3.zero, smoothingFactor * 0.3f);
+        }
                 
-                // Update left wrist GameObject for this player
+                // Update left wrist GameObject for this player with player offset
                 if (leftWristObjects[playerIndex] != null)
                 {
-                    leftWristObjects[playerIndex].transform.position = leftWristSmoothedPositions[playerIndex];
+                    // Add player offset to separate players spatially
+                    float playerOffset = playerIndex * 2f;
+                    Vector3 offsetPosition = leftWristSmoothedPositions[playerIndex];
+                    offsetPosition.x += playerOffset;
+                    leftWristObjects[playerIndex].transform.position = offsetPosition;
                 }
                 
-                Debug.Log($"Player {playerIndex + 1} Left wrist position: {leftPosition} | GameObject: {(leftWristObjects[playerIndex] != null ? "Assigned" : "NULL")}");
+                // Reduced debug logging for better performance with multiple people
+                // Debug.Log($"Player {playerIndex + 1} Left wrist position: {leftPosition} | GameObject: {(leftWristObjects[playerIndex] != null ? "Assigned" : "NULL")}");
             }
             
             // Process right wrist positions for this player
@@ -789,23 +919,29 @@ private void ProcessQueuedWristPositions()
             {
                 hasNewRightWristPosition[playerIndex] = false;
         
-        // Apply smoothing to reduce flickering
+        // Apply simple exponential smoothing for very stable movement
         if (rightPosition != Vector3.zero)
         {
-                    rightWristSmoothedPositions[playerIndex] = Vector3.Lerp(rightWristSmoothedPositions[playerIndex], rightPosition, smoothingFactor);
+            rightWristSmoothedPositions[playerIndex] = Vector3.Lerp(rightWristSmoothedPositions[playerIndex], rightPosition, smoothingFactor);
         }
         else
         {
-                    rightWristSmoothedPositions[playerIndex] = Vector3.Lerp(rightWristSmoothedPositions[playerIndex], Vector3.zero, smoothingFactor * 2f);
-                }
+            // Moderate decay when no input
+            rightWristSmoothedPositions[playerIndex] = Vector3.Lerp(rightWristSmoothedPositions[playerIndex], Vector3.zero, smoothingFactor * 0.3f);
+        }
                 
-                // Update right wrist GameObject for this player
+                // Update right wrist GameObject for this player with player offset
                 if (rightWristObjects[playerIndex] != null)
                 {
-                    rightWristObjects[playerIndex].transform.position = rightWristSmoothedPositions[playerIndex];
+                    // Add player offset to separate players spatially
+                    float playerOffset = playerIndex * 2f;
+                    Vector3 offsetPosition = rightWristSmoothedPositions[playerIndex];
+                    offsetPosition.x += playerOffset;
+                    rightWristObjects[playerIndex].transform.position = offsetPosition;
                 }
                 
-                Debug.Log($"Player {playerIndex + 1} Right wrist position: {rightPosition} | GameObject: {(rightWristObjects[playerIndex] != null ? "Assigned" : "NULL")}");
+                // Reduced debug logging for better performance with multiple people
+                // Debug.Log($"Player {playerIndex + 1} Right wrist position: {rightPosition} | GameObject: {(rightWristObjects[playerIndex] != null ? "Assigned" : "NULL")}");
             }
     }
 }
@@ -834,7 +970,7 @@ private Vector3 ConvertNormalizedToWorldPosition(Mediapipe.Tasks.Components.Cont
 }
 
     /// <summary>
-    /// Updates cylinder alpha based on collective stillness from all players - only increases, never decays
+    /// Updates cylinder alpha based on collective movement from all players - only increases, never decays
     /// </summary>
     private void UpdateBurnerAlpha()
     {
@@ -859,12 +995,12 @@ private Vector3 ConvertNormalizedToWorldPosition(Mediapipe.Tasks.Components.Cont
             previousRightWristPositions[playerIndex] = rightWristSmoothedPositions[playerIndex];
         }
         
-        // Update alpha based on collective stillness - only increase, never decrease
-        if (totalCollectiveMovement < movementThreshold)
+        // Update alpha based on collective movement - only increase, never decrease
+        if (totalCollectiveMovement > movementThreshold)
         {
-            // Increase alpha when poses are held steadily (low movement = stillness) - accumulates over time
+            // Increase alpha when there's significant movement - accumulates over time
             currentCollectiveAlpha = Mathf.Min(maxBurnerAlpha, currentCollectiveAlpha + alphaIncreaseRate * Time.deltaTime);
-            Debug.Log($"STILLNESS DETECTED! Movement={totalCollectiveMovement:F3} < Threshold={movementThreshold:F3}, Alpha={currentCollectiveAlpha:F2}");
+            Debug.Log($"MOVEMENT DETECTED! Movement={totalCollectiveMovement:F3} > Threshold={movementThreshold:F3}, Alpha={currentCollectiveAlpha:F2}");
         }
         // Removed decay logic - alpha never decreases, only accumulates brightness
         

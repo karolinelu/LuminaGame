@@ -10,6 +10,16 @@
     "/Users/karolinelujan/LuminaGame/Packages/com.github.homuler.mediapipe/package.json"
   ],
   "outputs": {
+    "com.unity.2d.sprite@1.0.0": {
+      "name": "com.unity.2d.sprite",
+      "displayName": "2D Sprite",
+      "resolvedPath": "/Users/karolinelujan/LuminaGame/Library/PackageCache/com.unity.2d.sprite@5eb30061d420",
+      "fingerprint": "5eb30061d42006925d91d40a6a8fca10bd64bbee",
+      "editorCompatibility": "2019.2.0a1",
+      "version": "1.0.0",
+      "source": "builtin",
+      "testable": false
+    },
     "com.unity.ai.navigation@2.0.8": {
       "name": "com.unity.ai.navigation",
       "displayName": "AI Navigation",
